@@ -22,7 +22,8 @@
         <service
             android:name=".PlayService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
     </application>
 
 </manifest>

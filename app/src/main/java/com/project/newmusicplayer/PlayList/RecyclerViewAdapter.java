@@ -3,6 +3,7 @@ package com.project.newmusicplayer.PlayList;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +21,11 @@ import java.util.ArrayList;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyHolder>{
     ArrayList<Music> list = new ArrayList<>();
-    HideMySelfListener hideMySelfListener;
+    SetPlayListFrameLayout setPlayListFrameLayout;
 
-    public RecyclerViewAdapter(ArrayList<Music> list, HideMySelfListener hideMySelfListener) {
+    public RecyclerViewAdapter(ArrayList<Music> list, SetPlayListFrameLayout setPlayListFrameLayout) {
         this.list = list;
-        this.hideMySelfListener = hideMySelfListener;
+        this.setPlayListFrameLayout = setPlayListFrameLayout;
     }
 
     @Override
@@ -39,6 +40,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.tvTitle.setText(list.get(position).title);
         holder.tvTime.setText(list.get(position).length);
         holder.music_uri = list.get(position).music_uri;
+        holder.album_uri = list.get(position).album_uri;
 
     }
 
@@ -50,6 +52,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     class MyHolder extends RecyclerView.ViewHolder{
         TextView tvArtist, tvTitle, tvTime;
         Uri music_uri;
+        Uri album_uri;
         public MyHolder(final View itemView) {
             super(itemView);
             tvArtist = itemView.findViewById(R.id.tvArtist);
@@ -62,14 +65,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     Intent intent = new Intent(itemView.getContext(), PlayService.class);
                     intent.putExtra("music_uri", music_uri);
                     itemView.getContext().startService(intent);
-                    hideMySelfListener.hideMySelf();
+                    //setPlayListFrameLayout.hideMySelf();
+                    setPlayListFrameLayout.setAlbumArt(album_uri);
+                    Log.d("album_uri", album_uri.toString());
 
                 }
             });
         }
     }
 
-    interface HideMySelfListener{
+    interface SetPlayListFrameLayout {
         void hideMySelf();
+        void setAlbumArt(Uri uri);
     }
 }
