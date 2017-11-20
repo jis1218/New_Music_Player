@@ -1,16 +1,22 @@
 package com.project.newmusicplayer;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.project.newmusicplayer.PermissionActivity.BaseActivity;
@@ -20,11 +26,13 @@ import com.project.newmusicplayer.PlayList.RecyclerViewAdapter;
 public class HomeActivity extends BaseActivity {
 
     PlayListViewFrameLayout playListViewFrameLayout;
-    ConstraintLayout layout;
+    ConstraintLayout layout, constraintPlay;
     ConstraintSet constraintSet;
     Button btnList, btnFirstList;
     ImageButton btnPlay;
     Button btnToList;
+    TextView tvArtistTitle;
+    RelativeLayout relativeLayout;
 
 
     @Override
@@ -34,12 +42,28 @@ public class HomeActivity extends BaseActivity {
         setListener();
     }
 
+    @Override
+    public void onBackPressed() {
+        if(playListViewFrameLayout.getVisibility()==View.VISIBLE){
+            playListViewFrameLayout.setVisibility(View.INVISIBLE);
+        }else {
+            super.onBackPressed();
+        }
+    }
+
+
+
     public void initView(){
         btnFirstList = findViewById(R.id.btnFirstList);
         btnList = findViewById(R.id.btnList);
         layout = findViewById(R.id.layout);
+        constraintPlay = findViewById(R.id.constraintPlay);
         btnPlay = findViewById(R.id.btnPlay);
         btnToList = findViewById(R.id.btnToList);
+        tvArtistTitle = findViewById(R.id.tvArtistTitle);
+        relativeLayout = findViewById(R.id.relative);
+
+
 
         //constraintSet = new ConstraintSet();
         //constraintSet.clone(layout);
@@ -64,9 +88,20 @@ public class HomeActivity extends BaseActivity {
 //
 //        layout.addView(playListViewFrameLayout);
         addContentView(playListViewFrameLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 800));
+        ViewTreeObserver viewTreeObserver = relativeLayout.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                relativeLayout.setY(constraintPlay.getY()-tvArtistTitle.getHeight());
+                relativeLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
+
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void setListener(){
         // List 클릭하면 숨어있던 리스트가 나오게 됨
         btnList.setOnClickListener(new View.OnClickListener() {
@@ -86,9 +121,25 @@ public class HomeActivity extends BaseActivity {
         btnToList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Log.d("height", (constraintPlay.getY()+tvArtistTitle.getHeight() + ""));
+                relativeLayout.setY(constraintPlay.getY()-tvArtistTitle.getHeight());
             }
         });
+        tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction()==MotionEvent.ACTION_MOVE) {
+                    relativeLayout.setY(event.getRawY()-layout.getY());
+                    Log.d("event", event.getRawY() + "");
+                }
+
+                return true;
+            }
+
+
+        });
+
+
     }
 
 }

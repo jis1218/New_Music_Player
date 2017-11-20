@@ -41,6 +41,8 @@ public class PlayListViewFrameLayout extends FrameLayout implements RecyclerView
         addView(view);
     }
 
+
+
     private void setRecyclerView(View view){
         setPlayList();
         recyclerView = view.findViewById(R.id.recyclerView);
