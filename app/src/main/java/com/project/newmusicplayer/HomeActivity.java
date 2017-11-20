@@ -26,7 +26,7 @@ import com.project.newmusicplayer.PlayList.RecyclerViewAdapter;
 public class HomeActivity extends BaseActivity {
 
     PlayListViewFrameLayout playListViewFrameLayout;
-    ConstraintLayout layout, constraintPlay;
+    ConstraintLayout layout, constraintPlay, constraintTop;
     ConstraintSet constraintSet;
     Button btnList, btnFirstList;
     ImageButton btnPlay;
@@ -58,6 +58,7 @@ public class HomeActivity extends BaseActivity {
         btnList = findViewById(R.id.btnList);
         layout = findViewById(R.id.layout);
         constraintPlay = findViewById(R.id.constraintPlay);
+        constraintTop = findViewById(R.id.constraintTop);
         btnPlay = findViewById(R.id.btnPlay);
         btnToList = findViewById(R.id.btnToList);
         tvArtistTitle = findViewById(R.id.tvArtistTitle);
@@ -125,18 +126,23 @@ public class HomeActivity extends BaseActivity {
                 relativeLayout.setY(constraintPlay.getY()-tvArtistTitle.getHeight());
             }
         });
-        tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
+
+        constraintTop.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction()==MotionEvent.ACTION_MOVE) {
-                    relativeLayout.setY(event.getRawY()-layout.getY());
-                    Log.d("event", event.getRawY() + "");
-                }
+            public boolean onTouch(View v, final MotionEvent event2) {
+                tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if(event.getAction()==MotionEvent.ACTION_MOVE)
+                        relativeLayout.setY(event2.getY());
+                        return true;
+                    }
+                });
+
+
 
                 return true;
             }
-
-
         });
 
 
