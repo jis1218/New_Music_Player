@@ -88,18 +88,18 @@ public class HomeActivity extends BaseActivity {
         });
 
 
-        btnPlay.setOnTouchListener(new View.OnTouchListener() {
+        tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
             float dX, dY;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
+                        dX = relativeLayout.getX() - event.getRawX();
+                        dY = relativeLayout.getY() - event.getRawY();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        v.animate()
+                        relativeLayout.animate()
                                 .y(event.getRawY()+dY)
                                 .setDuration(0)
                                 .start();
