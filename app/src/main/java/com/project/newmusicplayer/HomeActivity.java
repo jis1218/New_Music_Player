@@ -32,7 +32,7 @@ public class HomeActivity extends BaseActivity {
     ImageButton btnPlay;
     Button btnToList;
     TextView tvArtistTitle;
-    RelativeLayout relativeLayout;
+    RelativeLayout relativeFirst, relativeLayout;
 
 
     @Override
@@ -44,66 +44,82 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if(playListViewFrameLayout.getVisibility()==View.VISIBLE){
+        if (playListViewFrameLayout.getVisibility() == View.VISIBLE) {
             playListViewFrameLayout.setVisibility(View.INVISIBLE);
-        }else {
+        } else {
             super.onBackPressed();
         }
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
 
+        return super.dispatchTouchEvent(ev);
+    }
 
-    public void initView(){
+    public void initView() {
         btnFirstList = findViewById(R.id.btnFirstList);
         btnList = findViewById(R.id.btnList);
         layout = findViewById(R.id.layout);
         constraintPlay = findViewById(R.id.constraintPlay);
-        constraintTop = findViewById(R.id.constraintTop);
         btnPlay = findViewById(R.id.btnPlay);
         btnToList = findViewById(R.id.btnToList);
         tvArtistTitle = findViewById(R.id.tvArtistTitle);
         relativeLayout = findViewById(R.id.relative);
+        relativeFirst = findViewById(R.id.relativeFirst);
 
-
-
-        //constraintSet = new ConstraintSet();
-        //constraintSet.clone(layout);
         playListViewFrameLayout = new PlayListViewFrameLayout(this);
-        //playListViewFrameLayout.setId(View.generateViewId());
-        //playListViewFrameLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        //Log.d("playListView 아이디", ""+playListViewFrameLayout.getId());
-        //playListViewFrameLayout.setId(View.generateViewId());
-//        constraintSet.clear(playListViewFrameLayout.getId());
-//        constraintSet.connect(playListViewFrameLayout.getId(), ConstraintSet.LEFT, layout.getId(), ConstraintSet.LEFT,0);
-//        constraintSet.connect(playListViewFrameLayout.getId(), ConstraintSet.RIGHT, layout.getId(), ConstraintSet.RIGHT);
-//        constraintSet.constrainWidth(playListViewFrameLayout.getId(), ConstraintSet.MATCH_CONSTRAINT);
 
-        //playListViewFrameLayout.clearFocus();
+        playListViewFrameLayout.setBackgroundColor(Color.CYAN);
+        playListViewFrameLayout.setVisibility(View.INVISIBLE);
 
-        playListViewFrameLayout.setBackgroundColor(Color.WHITE);
-        playListViewFrameLayout.setVisibility(View.GONE);
-//        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
-//        playListViewFrameLayout.setLayoutParams(params);
+        Log.d("generateViewId()", playListViewFrameLayout.getId() + "");
 
-//        constraintSet.applyTo(layout);
-//
-//        layout.addView(playListViewFrameLayout);
-        addContentView(playListViewFrameLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 800));
         ViewTreeObserver viewTreeObserver = relativeLayout.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                relativeLayout.setY(constraintPlay.getY()-tvArtistTitle.getHeight());
+
+                relativeLayout.setY(constraintPlay.getY() - tvArtistTitle.getHeight());
                 relativeLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                relativeFirst.addView(playListViewFrameLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, relativeFirst.getHeight() - tvArtistTitle.getHeight()));
+
             }
         });
 
+
+        btnPlay.setOnTouchListener(new View.OnTouchListener() {
+            float dX, dY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        dX = v.getX() - event.getRawX();
+                        dY = v.getY() - event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        v.animate()
+                                .y(event.getRawY()+dY)
+                                .setDuration(0)
+                                .start();
+                        //v.setY(event.getRawY()+dY);
+                        break;
+
+                    case  MotionEvent.ACTION_UP :
+                        break;
+
+
+                }
+                return true;
+            }
+        });
 
 
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    public void setListener(){
+    public void setListener() {
         // List 클릭하면 숨어있던 리스트가 나오게 됨
         btnList.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,26 +138,8 @@ public class HomeActivity extends BaseActivity {
         btnToList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("height", (constraintPlay.getY()+tvArtistTitle.getHeight() + ""));
-                relativeLayout.setY(constraintPlay.getY()-tvArtistTitle.getHeight());
-            }
-        });
-
-        constraintTop.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, final MotionEvent event2) {
-                tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        if(event.getAction()==MotionEvent.ACTION_MOVE)
-                        relativeLayout.setY(event2.getY());
-                        return true;
-                    }
-                });
-
-
-
-                return true;
+                Log.d("height", (constraintPlay.getY() + tvArtistTitle.getHeight() + ""));
+                relativeLayout.setY(constraintPlay.getY() - tvArtistTitle.getHeight());
             }
         });
 
