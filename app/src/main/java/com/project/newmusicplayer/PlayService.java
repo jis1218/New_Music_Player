@@ -14,9 +14,28 @@ public class PlayService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Uri uri = intent.getParcelableExtra("music_uri");
-        PlayMusic.getInstance().setPlayer(this, uri);
-        PlayMusic.getInstance().startPlayer();
+
+        switch(intent.getAction()){
+            case "From_RecyclerView" :
+                Uri uri = intent.getParcelableExtra("music_uri");
+                PlayMusic.getInstance().setPlayer(this, uri);
+                PlayMusic.getInstance().startPlayer();
+                break;
+
+            case "From_PlayButton" :
+                PlayMusic.getInstance().startPlayer();
+                break;
+
+            case "From_PauseButton" :
+                PlayMusic.getInstance().pausePlayer();
+                break;
+
+            default :
+                break;
+
+        }
+
+
 
         return super.onStartCommand(intent, flags, startId);
     }

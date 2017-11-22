@@ -2,6 +2,7 @@ package com.project.newmusicplayer.PlayList;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.project.newmusicplayer.Dmanager.DataManager;
 import com.project.newmusicplayer.MusicAndPlay.Music;
 import com.project.newmusicplayer.PlayService;
 import com.project.newmusicplayer.R;
@@ -39,8 +41,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.tvArtist.setText(list.get(position).artist);
         holder.tvTitle.setText(list.get(position).title);
         holder.tvTime.setText(list.get(position).length);
-        holder.music_uri = list.get(position).music_uri;
-        holder.album_uri = list.get(position).album_uri;
+//        holder.music_uri = list.get(position).music_uri;
+//        holder.album_uri = list.get(position).album_uri;
+//        Log.d("getAdapterPosition()", holder.getAdapterPosition()+"");
 
     }
 
@@ -53,6 +56,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         TextView tvArtist, tvTitle, tvTime;
         Uri music_uri;
         Uri album_uri;
+        int position;
         public MyHolder(final View itemView) {
             super(itemView);
             tvArtist = itemView.findViewById(R.id.tvArtist);
@@ -62,20 +66,28 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(itemView.getContext(), PlayService.class);
-                    intent.putExtra("music_uri", music_uri);
-                    itemView.getContext().startService(intent);
-                    //setPlayListFrameLayout.hideMySelf();
-                    setPlayListFrameLayout.setAlbumArt(album_uri);
-                    Log.d("album_uri", album_uri.toString());
+                    DataManager dataManager = DataManager.getInstance();
+                    dataManager.setPosition(getAdapterPosition());
+                    dataManager.sendIntentToService(itemView.getContext());
+
+
+
+//                    Intent intent = new Intent(itemView.getContext(), PlayService.class);
+//                    intent.setAction("From_RecyclerView");
+//                    intent.putExtra("music_uri", music_uri);
+//                    itemView.getContext().startService(intent);
+                    setPlayListFrameLayout.setAlbumArt(dataManager.getAlbumUri());
+                    setPlayListFrameLayout.setTitleArtist(dataManager.getSonginfo());
+                    //Log.d("album_uri", album_uri.toString());
+
 
                 }
             });
         }
     }
 
-    interface SetPlayListFrameLayout {
-        void hideMySelf();
+    public interface SetPlayListFrameLayout {
         void setAlbumArt(Uri uri);
+        void setTitleArtist(String str);
     }
 }

@@ -23,17 +23,20 @@ import java.util.ArrayList;
  * Created by 정인섭 on 2017-11-16.
  */
 
-public class PlayListViewFrameLayout extends FrameLayout implements RecyclerViewAdapter.SetPlayListFrameLayout {
+public class PlayListViewFrameLayout extends FrameLayout {
 
     RecyclerView recyclerView;
     RecyclerViewAdapter adapter;
     ImageView album_art;
+    RecyclerViewAdapter.SetPlayListFrameLayout isetPlay;
 
     ArrayList<Music> list = new ArrayList<>();
 
-    public PlayListViewFrameLayout(@NonNull Context context) {
+    public PlayListViewFrameLayout(@NonNull Context context, RecyclerViewAdapter.SetPlayListFrameLayout isetPlay) {
         super(context);
+        this.isetPlay = isetPlay;
         init();
+
 
     }
 
@@ -43,32 +46,25 @@ public class PlayListViewFrameLayout extends FrameLayout implements RecyclerView
         addView(view);
     }
 
-
-
-    private void setRecyclerView(View view){
-        setPlayList();
-        recyclerView = view.findViewById(R.id.recyclerView);
-        album_art = view.findViewById(R.id.albumart);
-        adapter = new RecyclerViewAdapter(list, this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        album_art.setVisibility(INVISIBLE);
-    }
-
     private void setPlayList(){
         GetMusicInfo getMusicInfo = GetMusicInfo.getInstance();
         getMusicInfo.loadMusicInfo(getContext());
         list = getMusicInfo.getMusicList();
     }
 
-    @Override
-    public void hideMySelf() {
-        setVisibility(GONE);
+    private void setRecyclerView(View view){
+        setPlayList();
+        recyclerView = view.findViewById(R.id.recyclerView);
+        //album_art = view.findViewById(R.id.albumart);
+        adapter = new RecyclerViewAdapter(list, isetPlay);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        //album_art.setVisibility(INVISIBLE);
+    }
 
-    }
-    @Override
-    public void setAlbumArt(Uri uri){
-        album_art.setImageURI(uri);
-        album_art.setVisibility(VISIBLE);
-    }
+//    @Override
+//    public void setAlbumArt(Uri uri){
+//        //album_art.setImageURI(uri);
+//        //album_art.setVisibility(VISIBLE);
+//    }
 }
