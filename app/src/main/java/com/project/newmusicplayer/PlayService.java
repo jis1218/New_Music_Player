@@ -2,6 +2,7 @@ package com.project.newmusicplayer;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -30,10 +31,17 @@ public class PlayService extends Service {
                 PlayMusic.getInstance().pausePlayer();
                 break;
 
+            case "From_First" :
+                Uri uri2 = intent.getParcelableExtra("music_uri");
+                PlayMusic.getInstance().setPlayer(this, uri2);
+                break;
+
             default :
                 break;
 
         }
+
+
 
 
 

@@ -11,6 +11,7 @@ import android.net.Uri;
 public class PlayMusic {
 
     private static PlayMusic playMusic;
+    private Example example;
 
     public static PlayMusic getInstance(){
         if(playMusic==null){
@@ -19,7 +20,7 @@ public class PlayMusic {
         return playMusic;
     }
 
-    MediaPlayer mediaPlayer = null;
+    public MediaPlayer mediaPlayer = null;
 
     public void setPlayer(Context context, Uri uri){
         if(mediaPlayer!=null){
@@ -29,6 +30,16 @@ public class PlayMusic {
 
         mediaPlayer = MediaPlayer.create(context, uri);
         mediaPlayer.setLooping(false);
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                example.goFoward();
+            }
+        });
+    }
+
+    public void getExample(Example example){
+        this.example = example;
     }
 
     public void startPlayer(){
@@ -37,16 +48,15 @@ public class PlayMusic {
         }
     }
 
-    public void stopPlayer(){
-        if(mediaPlayer!=null){
-            mediaPlayer.stop();
-        }
-    }
-
     public void pausePlayer(){
         if(mediaPlayer!=null){
             mediaPlayer.pause();
         }
+    }
+
+    public interface Example{
+
+        void goFoward();
     }
 
 

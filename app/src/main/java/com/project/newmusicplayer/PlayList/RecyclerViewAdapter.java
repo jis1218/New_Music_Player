@@ -1,10 +1,7 @@
 package com.project.newmusicplayer.PlayList;
 
-import android.content.Intent;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +9,9 @@ import android.widget.TextView;
 
 import com.project.newmusicplayer.Dmanager.DataManager;
 import com.project.newmusicplayer.MusicAndPlay.Music;
-import com.project.newmusicplayer.PlayService;
 import com.project.newmusicplayer.R;
+import com.project.newmusicplayer.Util.Const;
+import com.project.newmusicplayer.Util.TimeConverter;
 
 import java.util.ArrayList;
 
@@ -40,7 +38,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void onBindViewHolder(MyHolder holder, int position) {
         holder.tvArtist.setText(list.get(position).artist);
         holder.tvTitle.setText(list.get(position).title);
-        holder.tvTime.setText(list.get(position).length);
+        holder.tvTime.setText(TimeConverter.miliToSec(list.get(position).length));
 //        holder.music_uri = list.get(position).music_uri;
 //        holder.album_uri = list.get(position).album_uri;
 //        Log.d("getAdapterPosition()", holder.getAdapterPosition()+"");
@@ -70,6 +68,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     dataManager.setPosition(getAdapterPosition());
                     dataManager.sendIntentToService(itemView.getContext());
 
+                    Const.setFlagTrue();
+
 
 
 //                    Intent intent = new Intent(itemView.getContext(), PlayService.class);
@@ -77,10 +77,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 //                    intent.putExtra("music_uri", music_uri);
 //                    itemView.getContext().startService(intent);
                     setPlayListFrameLayout.setAlbumArt(dataManager.getAlbumUri());
-                    setPlayListFrameLayout.setTitleArtist(dataManager.getSonginfo());
+                    setPlayListFrameLayout.setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
+                    //setPlayListFrameLayout.setAsyncTask().execute();
                     //Log.d("album_uri", album_uri.toString());
-
-
                 }
             });
         }
@@ -88,6 +87,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public interface SetPlayListFrameLayout {
         void setAlbumArt(Uri uri);
-        void setTitleArtist(String str);
+        void setSongInfo(String str, String length);
     }
 }

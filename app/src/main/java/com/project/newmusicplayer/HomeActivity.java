@@ -4,7 +4,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -15,26 +15,28 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.project.newmusicplayer.Dmanager.DataManager;
 import com.project.newmusicplayer.MusicAndPlay.GetMusicInfo;
+import com.project.newmusicplayer.MusicAndPlay.Music;
+import com.project.newmusicplayer.MusicAndPlay.PlayMusic;
 import com.project.newmusicplayer.PermissionActivity.BaseActivity;
 import com.project.newmusicplayer.PlayList.PlayListViewFrameLayout;
 import com.project.newmusicplayer.PlayList.RecyclerViewAdapter;
+import com.project.newmusicplayer.Util.Const;
+import com.project.newmusicplayer.Util.TimeConverter;
 
-public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.SetPlayListFrameLayout {
+public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.SetPlayListFrameLayout, PlayMusic.Example {
 
     PlayListViewFrameLayout playListViewFrameLayout;
-    ConstraintLayout layout, constraintPlay, constraintTop;
-    ConstraintSet constraintSet;
+    ConstraintLayout layout, constraintPlay;
     Button btnList, btnFirstList;
     ImageButton btnPlay, btnFoward, btnBackward;
     Button btnToList;
@@ -42,15 +44,27 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
     RelativeLayout relativeFirst, relativeLayout;
     ImageView imageViewAlbumArt;
     DataManager dataManager;
-    int time=0;
-
+    SeekBar seekBar;
+    int time;
 
     @Override
     public void init() {
         setContentView(R.layout.activity_home);
+        dataManager = DataManager.getInstance();
+        PlayMusic.getInstance().getExample(this);
         initView();
         setListener();
-        dataManager = DataManager.getInstance();
+        Const.setFlagTrue();
+        setAsyncTask();
+        setinitViewIfPlaying();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Const.setFlagFalse();
     }
 
     @Override
@@ -82,6 +96,7 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
         playListViewFrameLayout = new PlayListViewFrameLayout(this, this);
         playListViewFrameLayout.setBackgroundColor(Color.CYAN);
         playListViewFrameLayout.setVisibility(View.INVISIBLE);
+        seekBar = findViewById(R.id.seekBar);
 
         ViewTreeObserver viewTreeObserver = relativeLayout.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -92,6 +107,17 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
                 relativeFirst.addView(playListViewFrameLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, relativeFirst.getHeight() - tvArtistTitle.getHeight()));
             }
         });
+    }
+
+    private void setinitViewIfPlaying(){
+        if(PlayMusic.getInstance().mediaPlayer!=null){
+            setAlbumArt(dataManager.getAlbumUri());
+            setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
+            time = PlayMusic.getInstance().mediaPlayer.getCurrentPosition()/1000;
+            tvStrTime.setText(TimeConverter.getSec(time));
+            seekBar.setProgress(time);
+
+        }
     }
 
     private void setAnimator(int index) {
@@ -108,49 +134,52 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
         animForRelativeLayout.start();
     }
 
-    private String miliToSec(int mili) {
-        int sec = mili / 1000;
-        int min = sec / 60;
-        sec = sec % 60;
-
-        return String.format("%02d", min) + ":" + String.format("%02d", sec);
-    }
 
     @SuppressLint("StaticFieldLeak")
-    private void setASync(){
-        //time=0;
-        new AsyncTask<Void, Integer, Integer>(){
+    public void setAsyncTask() {
+        new AsyncTask<Object, Integer, Integer>() {
             @Override
-            protected Integer doInBackground(Void... voids) {
-                while(time<30){
-                    time++;
-                    publishProgress(time);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            protected Integer doInBackground(Object... objects) {
 
-                }
-                return time;
+                    while (Const.flag) {
+                        if(PlayMusic.getInstance().mediaPlayer!=null){
+                            if(PlayMusic.getInstance().mediaPlayer.isPlaying()){
+                                time++;
+                                publishProgress(time);
+
+                                Log.d("time은", time + "");
+                            }
+                        }
+
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                return 0;
             }
 
             @Override
             protected void onProgressUpdate(Integer... values) {
-                tvStrTime.setText(miliToSec(time));
+                tvStrTime.setText(TimeConverter.getSec(time));
+                seekBar.setProgress(time);
+
             }
 
             @Override
             protected void onPostExecute(Integer aVoid) {
-                tvStrTime.setText(miliToSec(time));
+                tvStrTime.setText(TimeConverter.getSec(time));
             }
         }.execute();
+
     }
 
     public void setListener() {
 
         tvArtistTitle.setOnTouchListener(new View.OnTouchListener() {
-            float dX, dY;
+            float dY;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -198,16 +227,18 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch(v.getTag().toString()){
-                    case "Pause" :
+                switch (v.getTag().toString()) {
+                    //누르면 플레이됨
+                    case "Pause":
+                        Const.setFlagTrue();
                         ((ImageButton) v).setImageResource(android.R.drawable.ic_media_pause);
                         v.setTag("Playing");
                         Intent intent = new Intent(HomeActivity.this, PlayService.class);
                         intent.setAction("From_PlayButton");
                         startService(intent);
                         break;
-
-                    case "Playing" :
+                    //누르면 멈춤
+                    case "Playing":
                         ((ImageButton) v).setImageResource(android.R.drawable.ic_media_play);
                         v.setTag("Pause");
                         Intent intent2 = new Intent(HomeActivity.this, PlayService.class);
@@ -225,24 +256,34 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
         btnFoward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dataManager.setPosition(dataManager.getPosition()+1);
-                setAlbumArt(dataManager.getAlbumUri());
-                setTitleArtist(dataManager.getSonginfo());
+                dataManager.setPosition(dataManager.getPosition() + 1);
                 dataManager.sendIntentToService(HomeActivity.this);
-                setASync();
+                setAlbumArt(dataManager.getAlbumUri());
+                setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
             }
         });
 
         btnBackward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dataManager.setPosition(dataManager.getPosition()-1);
-                setAlbumArt(dataManager.getAlbumUri());
-                setTitleArtist(dataManager.getSonginfo());
+                dataManager.setPosition(dataManager.getPosition() - 1);
                 dataManager.sendIntentToService(HomeActivity.this);
+                setAlbumArt(dataManager.getAlbumUri());
+                setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
+
+
             }
         });
 
+//        PlayMusic.getInstance().mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                dataManager.setPosition(dataManager.getPosition() + 1);
+//                setAlbumArt(dataManager.getAlbumUri());
+//                setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
+//                dataManager.sendIntentToService(HomeActivity.this);
+//            }
+//        });
 
 
         btnToList.setOnClickListener(new View.OnClickListener() {
@@ -251,21 +292,51 @@ public class HomeActivity extends BaseActivity implements RecyclerViewAdapter.Se
 
             }
         });
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                time = seekBar.getProgress();
+                PlayMusic.getInstance().mediaPlayer.seekTo(time*1000);
+
+                tvStrTime.setText(TimeConverter.getSec(time));
+            }
+        });
+    }
+    @Override
+    public void goFoward(){
+        dataManager.setPosition(dataManager.getPosition() + 1);
+        dataManager.sendIntentToService(HomeActivity.this);
+        setAlbumArt(dataManager.getAlbumUri());
+        setSongInfo(dataManager.getSonginfo(), dataManager.getSongLength());
     }
 
     @Override
     public void setAlbumArt(Uri uri) {
         if ("".equals(uri.toString())) {
             imageViewAlbumArt.setImageResource(R.mipmap.ic_launcher);
-        }else {
+        } else {
             imageViewAlbumArt.setImageURI(uri);
         }
     }
 
     @Override
-    public void setTitleArtist(String str) {
+    public void setSongInfo(String str, String length) {
         tvArtistTitle.setText(str);
         btnPlay.setImageResource(android.R.drawable.ic_media_pause);
         btnPlay.setTag("Playing");
+        tvMusicTime.setText(length);
+        seekBar.setMax(dataManager.getsongLengthInt());
+        time = 0;
     }
 }

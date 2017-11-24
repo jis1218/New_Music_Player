@@ -13,4 +13,27 @@ public class TimeConverter {
         return sdf.format(time);
 
     }
+
+    public static String miliToSec(int mili) {
+        int sec = mili / 1000;
+        int min = sec / 60;
+        sec = sec % 60;
+
+        return String.format("%02d", min) + ":" + String.format("%02d", sec);
+    }
+
+    public static String getSec(int sec){
+        int min = sec/60;
+        sec = sec % 60;
+
+        return String.format("%02d", min) + ":" + String.format("%02d", sec);
+    }
+
+    public static int miliToSecInt(int mili){
+        return mili/1000;
+    }
+
+    public static String miliToSec(String mili){
+        return miliToSec(Integer.parseInt(mili));
+    }
 }

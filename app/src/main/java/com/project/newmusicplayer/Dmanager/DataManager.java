@@ -7,6 +7,7 @@ import android.net.Uri;
 import com.project.newmusicplayer.MusicAndPlay.GetMusicInfo;
 import com.project.newmusicplayer.MusicAndPlay.Music;
 import com.project.newmusicplayer.PlayService;
+import com.project.newmusicplayer.Util.TimeConverter;
 
 import java.util.ArrayList;
 
@@ -52,6 +53,13 @@ public class DataManager {
 
     }
 
+    public void sendIntentToServiceFirst(Context context){
+        Intent intent = new Intent(context, PlayService.class);
+        intent.setAction("From_First");
+        intent.putExtra("music_uri", list.get(position).music_uri);
+        context.startService(intent);
+    }
+
     public Uri getAlbumUri(){
         return list.get(position).album_uri;
     }
@@ -60,13 +68,13 @@ public class DataManager {
         return list.get(position).artist + " - " + list.get(position).title;
     }
 
-
-    public int getCurrentPosition() {
-        return position;
+    public String getSongLength(){
+        return TimeConverter.miliToSec(list.get(position).length);
     }
 
-    public interface ISongData{
-        void setSongData(Uri album_uri, String song_info);
+    public int getsongLengthInt(){
+        return TimeConverter.miliToSecInt(Integer.parseInt(list.get(position).length));
     }
+
 
 }
